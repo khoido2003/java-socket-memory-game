@@ -1,48 +1,49 @@
 ** Project structure
 
-memory-game/
-│
-├── src/
-│   ├── controller/
-│   │   ├── GameController.java
-│   │   ├── AuthController.java
-│   │   ├── FriendController.java
-│   │   ├── MatchmakingController.java
-│   │   ├── LeaderboardController.java
-│   │
-│   ├── model/
-│   │   ├── Player.java
-│   │   ├── Match.java
-│   │   ├── GameState.java
-│   │   ├── Leaderboard.java
-│   │   ├── FriendRequest.java
-│   │   ├── Cup.java
-│   │
-│   ├── view/
-│   │   ├── LoginView.java
-│   │   ├── GameView.java
-│   │   ├── LeaderboardView.java
-│   │   ├── LobbyView.java
-│   │   ├── MatchView.java
-│   │
-│   ├── network/
-│   │   ├── SocketManager.java
-│   │   ├── ClientHandler.java
-│   │   ├── GameServer.java
-│   │
-│   ├── service/
-│   │   ├── AuthService.java
-│   │   ├── GameService.java
-│   │   ├── MatchmakingService.java
-│   │   ├── LeaderboardService.java
-│   │   ├── FriendService.java
-│   │
-│   ├── main/
-│   │   ├── ServerMain.java
-│   │   ├── ClientMain.java
-│   │
-└── resources/
-
+``` bash
+    memory-game/
+    │
+    ├── src/
+    │   ├── controller/
+    │   │   ├── GameController.java
+    │   │   ├── AuthController.java
+    │   │   ├── FriendController.java
+    │   │   ├── MatchmakingController.java
+    │   │   ├── LeaderboardController.java
+    │   │
+    │   ├── model/
+    │   │   ├── Player.java
+    │   │   ├── Match.java
+    │   │   ├── GameState.java
+    │   │   ├── Leaderboard.java
+    │   │   ├── FriendRequest.java
+    │   │   ├── Cup.java
+    │   │
+    │   ├── view/
+    │   │   ├── LoginView.java
+    │   │   ├── GameView.java
+    │   │   ├── LeaderboardView.java
+    │   │   ├── LobbyView.java
+    │   │   ├── MatchView.java
+    │   │
+    │   ├── network/
+    │   │   ├── SocketManager.java
+    │   │   ├── ClientHandler.java
+    │   │   ├── GameServer.java
+    │   │
+    │   ├── service/
+    │   │   ├── AuthService.java
+    │   │   ├── GameService.java
+    │   │   ├── MatchmakingService.java
+    │   │   ├── LeaderboardService.java
+    │   │   ├── FriendService.java
+    │   │
+    │   ├── main/
+    │   │   ├── ServerMain.java
+    │   │   ├── ClientMain.java
+    │   │
+    └── resources/
+```
 
 ** Project description:
 
