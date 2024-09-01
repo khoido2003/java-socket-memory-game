@@ -1,51 +1,65 @@
-** Project structure
+## Project structure (Maven)
 
 ``` bash
-    memory-game/
+memory-game/
+│
+├── pom.xml                    # Maven Project Object Model file
+│
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── dev/
+    │   │       └── memory_game/
+    │   │           ├── controller/
+    │   │           │   ├── GameController.java
+    │   │           │   ├── AuthController.java
+    │   │           │   ├── FriendController.java
+    │   │           │   ├── MatchmakingController.java
+    │   │           │   └── LeaderboardController.java
+    │   │           │
+    │   │           ├── model/
+    │   │           │   ├── Player.java
+    │   │           │   ├── Match.java
+    │   │           │   ├── GameState.java
+    │   │           │   ├── Leaderboard.java
+    │   │           │   ├── FriendRequest.java
+    │   │           │   └── Cup.java
+    │   │           │
+    │   │           ├── view/
+    │   │           │   ├── LoginView.java
+    │   │           │   ├── GameView.java
+    │   │           │   ├── LeaderboardView.java
+    │   │           │   ├── LobbyView.java
+    │   │           │   └── MatchView.java
+    │   │           │
+    │   │           ├── network/
+    │   │           │   ├── SocketManager.java
+    │   │           │   ├── ClientHandler.java
+    │   │           │   └── GameServer.java
+    │   │           │
+    │   │           └── service/
+    │   │               ├── AuthService.java
+    │   │               ├── GameService.java
+    │   │               ├── MatchmakingService.java
+    │   │               ├── LeaderboardService.java
+    │   │               └── FriendService.java
+    │   │
+    │   └── resources/
+    │       └── ...         # Place your resource files here (e.g., properties files, images, etc.)
     │
-    ├── src/
-    │   ├── controller/
-    │   │   ├── GameController.java
-    │   │   ├── AuthController.java
-    │   │   ├── FriendController.java
-    │   │   ├── MatchmakingController.java
-    │   │   ├── LeaderboardController.java
-    │   │
-    │   ├── model/
-    │   │   ├── Player.java
-    │   │   ├── Match.java
-    │   │   ├── GameState.java
-    │   │   ├── Leaderboard.java
-    │   │   ├── FriendRequest.java
-    │   │   ├── Cup.java
-    │   │
-    │   ├── view/
-    │   │   ├── LoginView.java
-    │   │   ├── GameView.java
-    │   │   ├── LeaderboardView.java
-    │   │   ├── LobbyView.java
-    │   │   ├── MatchView.java
-    │   │
-    │   ├── network/
-    │   │   ├── SocketManager.java
-    │   │   ├── ClientHandler.java
-    │   │   ├── GameServer.java
-    │   │
-    │   ├── service/
-    │   │   ├── AuthService.java
-    │   │   ├── GameService.java
-    │   │   ├── MatchmakingService.java
-    │   │   ├── LeaderboardService.java
-    │   │   ├── FriendService.java
-    │   │
-    │   ├── main/
-    │   │   ├── ServerMain.java
-    │   │   ├── ClientMain.java
-    │   │
-    └── resources/
+    └── test/
+        └── java/
+            └── dev/
+                └── memory_game/
+                    ├── controller/
+                    ├── model/
+                    ├── view/
+                    ├── network/
+                    └── service/
+
 ```
 
-** Project description:
+## Project description:
 
 Hệ thống: Trò chơi bao gồm một server và nhiều client kết nối với nhau. Server sẽ quản lý các trận đấu, lưu trữ thông tin người chơi, xử lý bảng xếp hạng và cúp.
 
@@ -91,3 +105,9 @@ Xếp hạng và cúp:
     Bảng xếp hạng: Kết quả của các trận đấu xếp hạng sẽ được lưu trữ trên server. Mỗi người chơi có thể xem bảng xếp hạng toàn hệ thống, được sắp xếp theo tổng số cúp mà mỗi người chơi đã giành được.
     Cúp: Cúp sẽ được trao cho người chiến thắng trong mỗi trận đấu xếp hạng (1v1). Người chơi càng có nhiều cúp, thứ hạng của họ càng cao.
     Hệ thống cúp: Server có thể cung cấp nhiều loại cúp khác nhau tùy vào độ khó của trận đấu hoặc các sự kiện đặc biệt trong game.
+
+
+## Run project:
+``` bash
+    mvn exec:java
+```
