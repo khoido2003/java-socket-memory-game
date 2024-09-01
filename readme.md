@@ -1,4 +1,6 @@
-## Project structure (Maven)
+#  JAVA SOCKET TEST MEMORY GAME PROJECT
+
+## Project structure (Maven) 
 
 ``` bash
 memory-game/
@@ -45,7 +47,7 @@ memory-game/
     │   │               └── FriendService.java
     │   │
     │   └── resources/
-    │       └── ...         # Place your resource files here (e.g., properties files, images, etc.)
+    │       └── db/migration       
     │
     └── test/
         └── java/
@@ -59,7 +61,7 @@ memory-game/
 
 ```
 
-## Project description:
+## Project description 📑:
 
 Hệ thống: Trò chơi bao gồm một server và nhiều client kết nối với nhau. Server sẽ quản lý các trận đấu, lưu trữ thông tin người chơi, xử lý bảng xếp hạng và cúp.
 
@@ -107,7 +109,27 @@ Xếp hạng và cúp:
     Hệ thống cúp: Server có thể cung cấp nhiều loại cúp khác nhau tùy vào độ khó của trận đấu hoặc các sự kiện đặc biệt trong game.
 
 
-## Run project:
+## Prerequisites 🛠
+
+Before you begin, ensure you have met the following requirements:
+
+### 1. Java Development Kit (JDK)
+- **Version**: JDK 8 or higher (recommended: JDK 11 or JDK 17)
+- **Installation**: Ensure that the JDK is installed and the `JAVA_HOME` environment variable is set correctly.
+
+### 2. Maven
+- **Version**: Apache Maven 3.6 or higher
+- **Installation**: Install Maven and ensure that the `MAVEN_HOME` environment variable is set. Verify the installation by running:
+```bash
+mvn -v
+```
+### 3. MySQL Database
+- **Version**: MySQL 5.7 or higher.
+- **Installation**: Install MySQL server and a database for the project
+- **Configuration**: Update database connection string in DbConnection.java file
+
+
+## Run project ⚙:
 
 ### Open project in CMD
 
@@ -127,3 +149,19 @@ mvn clean install
 mvn flyway:migrate
 
 ```
+
+## Project Summary 🎯
+
+This Java Maven project is an online multiplayer memory game that utilizes Socket programming for real-time interactions between players. The game challenges players' memory and cognitive skills through a series of fun and engaging levels. Built using JDBC for database connectivity and Flyway for managing database migrations, this project demonstrates how to create an interactive gaming experience with server-client architecture.
+
+### Key Features:
+- **Multiplayer Gameplay**: Allows multiple players to connect and compete in real-time, enhancing the gaming experience.
+- **Socket Communication**: Utilizes Java Socket programming to enable seamless communication between the game server and connected clients.
+- **Database Integration**: Employs JDBC to interact with a MySQL database, storing player information, game statistics, and scores.
+- **Database Migrations with Flyway**: Implements Flyway for managing database schema migrations, ensuring that the database structure evolves as needed without disrupting gameplay.
+- **User Management**: Includes functionality for user registration, login, and score tracking, enhancing user engagement and competition.
+
+### Goals:
+The primary goal of this project is to create an engaging online multiplayer experience that tests players' memory skills while providing a solid foundation in real-time communication and database management in Java. This project serves as a valuable resource for developers looking to understand the complexities of multiplayer game development, socket programming, and database integration.
+
+Future enhancements could include adding more game levels, improved user interfaces, and advanced features like leaderboards or achievements.
