@@ -108,6 +108,22 @@ Xếp hạng và cúp:
 
 
 ## Run project:
+
+### Open project in CMD
+
 ``` bash
-    mvn exec:java
+mvn exec:java
+```
+
+###  Cleaning and rebuilding your project using the following commands:
+
+``` bash
+mvn clean install
+```
+
+### Run migration
+
+``` bash
+mvn flyway:migrate
+
 ```

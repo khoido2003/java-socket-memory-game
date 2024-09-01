@@ -15,16 +15,29 @@
     </properties>
 
     <build>
-    <plugins>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>exec-maven-plugin</artifactId>
-            <version>3.4.1</version>
-            <configuration>
-                <mainClass>dev.memory_game.Main</mainClass>
-            </configuration>
-        </plugin>
-    </plugins>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <mainClass>dev.memory_game.Main</mainClass>
+                </configuration>
+            </plugin>
+
+
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>9.16.0</version> <!-- Check for the latest version -->
+                <configuration>
+                    <url>jdbc:mysql://localhost:3306/memorygame</url> <!-- Your database URL -->
+                    <user>root</user> <!-- Your database username -->
+                    <password></password> <!-- Your database password -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
@@ -33,9 +46,14 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.20</version>
         </dependency>
+
+
+        <!-- DB Migration -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+            <version>8.5.5</version>
+        </dependency>
     </dependencies>
-
-</build>
-
 
 </project>
