@@ -5,17 +5,18 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import dev.memory_game.network.SocketServer;
+import dev.memory_game.network.SocketClient;
+
 public class Main {
 
-  @SuppressWarnings("null")
   public static void main(String[] args) {
-
+    // Start the database connection
     Connection connection = DbConnection.getConnection();
     ResultSet resultSet = null;
     Statement statement = null;
 
     if (connection != null) {
-
       try {
         statement = connection.createStatement();
         String query = "SELECT * FROM users"; // Replace with your actual table name
@@ -47,5 +48,13 @@ public class Main {
       System.out.println("Connection failed");
     }
 
+    // Start the socket server
+    int port = 8080; // Choose your desired port
+    SocketServer server = new SocketServer(port);
+    new Thread(() -> server.start()).start();
+
+    // // Start the socket client
+    SocketClient client = new SocketClient("127.0.0.1", port);
+    new Thread(() -> client.start()).start();
   }
 }
