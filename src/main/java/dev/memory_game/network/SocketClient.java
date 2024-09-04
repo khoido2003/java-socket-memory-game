@@ -9,6 +9,7 @@ import java.net.Socket;
 public class SocketClient {
   private String serverAddress;
   private int serverPort;
+  private static final String SECRET_TOKEN = "test_token";
 
   public SocketClient(String serverAddress, int serverPort) {
     this.serverAddress = serverAddress;
@@ -16,7 +17,6 @@ public class SocketClient {
   }
 
   public void start() {
-
     try (Socket socket = new Socket(serverAddress, serverPort)) {
 
       // Write the data to the server
@@ -25,24 +25,34 @@ public class SocketClient {
       // Read data from the server
       BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
+      // Send the authorization token
+      out.println(SECRET_TOKEN);
+
+      // Wait for server response to authorization
+      String serverResponse = in.readLine();
+
+      if ("Unauthorized".equals(serverResponse)) {
+        System.out.println("Connection refused by server: Unauthorized");
+        return; // Exit if unauthorized
+      } else {
+        System.out.println("Connected and authorized by server.");
+      }
+
       // Get user input from the terminal
       BufferedReader userInput = new BufferedReader(new InputStreamReader(System.in));
-
       String userInputStr;
-      System.out.println("Connected to server. Type a message to send:");
 
       // Start a thread to listen for incoming messages
-      new Thread(new IncomingMessageHandler(socket)).start();
+      new Thread(new IncomingMessageHandler(socket, in)).start();
 
+      System.out.println("Connected to server. Type a message to send:");
       while ((userInputStr = userInput.readLine()) != null) {
-
+        if (userInputStr.trim().isEmpty()) {
+          continue; // Skip empty input
+        }
         // Send message to server
         out.println(userInputStr);
         out.flush();
-
-        // Wait for response from server
-        String response = in.readLine();
-        System.out.println("Server response: " + response);
       }
 
     } catch (IOException e) {
@@ -52,25 +62,22 @@ public class SocketClient {
 
   private static class IncomingMessageHandler implements Runnable {
     private Socket socket;
+    private BufferedReader in;
 
-    public IncomingMessageHandler(Socket socket) {
+    public IncomingMessageHandler(Socket socket, BufferedReader in) {
       this.socket = socket;
+      this.in = in;
     }
 
     public void run() {
-
-      try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+      try {
         String message;
         while ((message = in.readLine()) != null) {
-          System.out.println("Received from client: " + message);
-
+          System.out.println("Received from server: " + message);
         }
       } catch (IOException e) {
-        System.out.println("Error reading from client: " + e.getMessage());
+        System.out.println("Error reading from server: " + e.getMessage());
       }
-
     }
-
   }
-
 }
