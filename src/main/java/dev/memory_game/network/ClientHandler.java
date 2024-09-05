@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.util.Set;
 
+import dev.memory_game.utils.JwtUtil;
+
 public class ClientHandler extends Thread {
   private Socket clientSocket;
   private Set<Socket> clientSockets;
@@ -15,12 +17,10 @@ public class ClientHandler extends Thread {
   private Room room;
   private SocketServer server;
 
-  private static final String SECRET_TOKEN = "test_token";
-
   public ClientHandler(Socket socket, Set<Socket> clientSockets, SocketServer server) {
     this.clientSocket = socket;
     this.clientSockets = clientSockets;
-    this.clientID = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+    this.clientID = "ID1001";
     this.server = server;
   }
 
@@ -33,14 +33,14 @@ public class ClientHandler extends Thread {
       ///////////////////////////////////////////////////////////
 
       // Handle authentication
-      String token = in.readLine();
-      if (!token.equals(SECRET_TOKEN)) {
-        out.println("Unauthorized");
-        clientSocket.close();
-        return;
-      } else {
-        out.println("Authenticated");
-      }
+      // String token = in.readLine();
+      // if (!token.equals(SECRET_TOKEN)) {
+      // out.println("Unauthorized");
+      // clientSocket.close();
+      // return;
+      // } else {
+      // out.println("Authenticated");
+      // }
 
       //////////////////////////////////////////////////////////
 
@@ -62,9 +62,7 @@ public class ClientHandler extends Thread {
     } catch (IOException e) {
       System.out.println("Client handler exception: " + e.getMessage());
     } finally {
-
       cleanUp();
-
     }
   }
 
@@ -106,10 +104,11 @@ public class ClientHandler extends Thread {
         room.broadcast(message, this);
       }
     }
-
   }
 
   public void sendMessage(String message) {
+
+    // Send to the corresponding player
     out.println(message);
     // Make sure the message is sent
     out.flush();

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,6 +32,7 @@ public class SocketServer {
 
       while (true) {
 
+        // Accept socket connection from the client
         Socket clientSocket = serverSocket.accept();
 
         // Add the client socket to the list of user connected.
@@ -39,7 +41,11 @@ public class SocketServer {
         System.out.println("New client connected: " + clientSocket.getInetAddress());
 
         // Create a separate thread for each client connection
+        // NEVER use this way since it can overwhelm the system:
         // new ClientHandler(clientSocket, clientSockets).start();
+
+        // Instead of init a new thread for each client connection, instead using
+        // excutorService to control the thread for each client connection
         threadPool.submit(new ClientHandler(clientSocket, clientSockets, this));
 
       }
@@ -51,7 +57,10 @@ public class SocketServer {
   }
 
   public Room createRoom(int maxPlayers) {
-    String roomId = "Room-" + (rooms.size() + 1);
+
+    String id = UUID.randomUUID().toString();
+
+    String roomId = "Room-" + id;
     Room room = new Room(roomId, maxPlayers);
 
     rooms.put(roomId, room);
@@ -66,5 +75,4 @@ public class SocketServer {
   public void removeRoom(String roomId) {
     rooms.remove(roomId);
   }
-
 }
