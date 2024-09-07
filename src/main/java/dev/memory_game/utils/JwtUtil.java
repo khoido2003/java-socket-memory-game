@@ -27,10 +27,10 @@ public class JwtUtil {
     // Create a SecretKey from the byte array, specifying the algorithm
     private static SecretKey secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
 
-    public static String generateToken(String clientId, String email, String name) {
+    public static String generateToken(String userId, String email, String username) {
 
         // Expiration time: 2592000000L milliseconds (30 days)
-        return Jwts.builder().setSubject(clientId).claim("email", email).claim("name", name).setIssuedAt(new Date())
+        return Jwts.builder().setSubject(userId).claim("email", email).claim("name", username).setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 2592000000L)).signWith(secretKey).compact();
     }
 
@@ -41,9 +41,9 @@ public class JwtUtil {
 
             String userId = claims.getSubject();
             String email = (String) claims.get("email");
-            String name = (String) claims.get("name");
+            String username = (String) claims.get("username");
 
-            return new JwtToken(userId, email, name);
+            return new JwtToken(userId, email, username);
 
         } catch (ExpiredJwtException e) {
             // If the token is outdated then it will go into here

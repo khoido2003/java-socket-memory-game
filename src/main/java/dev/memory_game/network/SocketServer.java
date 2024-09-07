@@ -17,12 +17,12 @@ public class SocketServer {
   private Map<String, Room> rooms = new HashMap<>();
 
   // Setup a thread pool to handle connections
-  private ExecutorService threadPool;
+  private final ExecutorService threadPool;
 
   public SocketServer(
-      int port) {
+      int port, ExecutorService threadPool) {
     this.port = port;
-    this.threadPool = Executors.newFixedThreadPool(16);
+    this.threadPool = threadPool;
   }
 
   public void start() {
@@ -42,6 +42,7 @@ public class SocketServer {
 
         // Create a separate thread for each client connection
         // NEVER use this way since it can overwhelm the system:
+
         // new ClientHandler(clientSocket, clientSockets).start();
 
         // Instead of init a new thread for each client connection, instead using

@@ -10,4 +10,17 @@ public class JwtToken {
     this.email = email;
     this.name = name;
   }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
 }
