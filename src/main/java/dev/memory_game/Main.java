@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import dev.memory_game.network.SocketServer;
 import dev.memory_game.utils.ThreadPoolManager;
 import dev.memory_game.controllers.RoutesController;
-import dev.memory_game.network.SocketClient;
+// import dev.memory_game.network.SocketClient;
 
 public class Main {
 
@@ -38,13 +38,18 @@ public class Main {
     // Socket server
 
     // Start the socket server
-    int port = 8080; // Choose your desired port
+    int port = 8082; // Choose your desired port
     SocketServer server = new SocketServer(port, threadPool);
     new Thread(() -> server.start()).start();
 
-    // // // Start the socket client
-    SocketClient client = new SocketClient("127.0.0.1", port);
-    new Thread(() -> client.start()).start();
+    System.out.println("Socket server started on port " + port);
+
+    // // // Start the socket client - THE CLIENT WILL BE SEPARATED TO A DIFFERENT
+    // PROJECT THAT SEPECIFY FOR THE FRONTEND, SO ONLY UNCOMMENTED THIS IF YOU WANT
+    // TO TEST IF THE CLIENT CAN CONNECT TO THE SERVER FROM THIS PROJECT.
+
+    // SocketClient client = new SocketClient("127.0.0.1", port);
+    // new Thread(() -> client.start()).start();
 
     ///////////////////////////////////////////////
 

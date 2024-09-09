@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.util.Set;
 
+import dev.memory_game.utils.JwtUtil;
+
 // import dev.memory_game.utils.JwtUtil;
 
 public class ClientHandler extends Thread {
@@ -24,28 +26,35 @@ public class ClientHandler extends Thread {
     this.server = server;
   }
 
+  @Override
   public void run() {
-    try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+    try {
+      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
       // Get the PrintWriter object to send messages to the client.
       out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-      ///////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////
 
-      // Handle authentication
-      // String token = in.readLine();
-      // if (!token.equals(SECRET_TOKEN)) {
-      // out.println("Unauthorized");
-      // clientSocket.close();
-      // return;
-      // } else {
-      // out.println("Authenticated");
-      // }
+      // Read the first message (the JWT token)
+      String jwtToken = in.readLine();
 
-      //////////////////////////////////////////////////////////
+      // Before processing the request, check the jwt token if it is valid
+      boolean result = JwtUtil.isValidToken(jwtToken);
+
+      if (!result) {
+        out.println("Unauthorized! Your jwt token is invalid.");
+        clientSocket.close();
+        return;
+      } else {
+        out.println("Authorized");
+      }
+
+      ///////////////////////////////////////////////////////////////
+
+      // Process the request
 
       String message;
-
       while ((message = in.readLine()) != null) {
 
         System.out.println("Received from client " + clientID + ": " + message);
@@ -60,7 +69,7 @@ public class ClientHandler extends Thread {
       }
 
     } catch (IOException e) {
-      System.out.println("Client handler exception: " + e.getMessage());
+      System.out.println("Client disconnected: " + e.getMessage());
     } finally {
       cleanUp();
     }
