@@ -1,7 +1,7 @@
 package dev.memory_game.utils;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+// import javax.crypto.SecretKey;
+// import javax.crypto.spec.SecretKeySpec;
 
 import dev.memory_game.models.JwtToken;
 import io.jsonwebtoken.Claims;
@@ -25,8 +25,9 @@ public class JwtUtil {
     // Decode the base64 encoded string into a byte array
     private static byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
 
-    // Create a SecretKey from the byte array, specifying the algorithm
-    private static SecretKey secretKey = new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    // // Create a SecretKey from the byte array, specifying the algorithm
+    // private static SecretKey secretKey = new SecretKeySpec(decodedKey, 0,
+    // decodedKey.length, "AES");
 
     @SuppressWarnings("deprecation")
     public static String generateToken(String userId, String email, String username) {

@@ -39,7 +39,7 @@ public class Main {
 
     // Start the socket server
     int port = 8082; // Choose your desired port
-    SocketServer server = new SocketServer(port, threadPool);
+    SocketServer server = new SocketServer(port, threadPool, connection);
     new Thread(() -> server.start()).start();
 
     System.out.println("Socket server started on port " + port);

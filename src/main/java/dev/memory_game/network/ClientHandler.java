@@ -7,6 +7,9 @@ import java.io.PrintWriter;
 import java.io.InputStreamReader;
 import java.util.Set;
 
+import dev.memory_game.DAO.FriendDAO;
+import dev.memory_game.models.Friend;
+import dev.memory_game.models.JwtToken;
 import dev.memory_game.utils.JwtUtil;
 
 // import dev.memory_game.utils.JwtUtil;
@@ -22,7 +25,7 @@ public class ClientHandler extends Thread {
   public ClientHandler(Socket socket, Set<Socket> clientSockets, SocketServer server) {
     this.clientSocket = socket;
     this.clientSockets = clientSockets;
-    this.clientID = "ID1001";
+    this.clientID = "";
     this.server = server;
   }
 
@@ -48,6 +51,21 @@ public class ClientHandler extends Thread {
         return;
       } else {
         out.println("Authorized");
+
+        // Decode the token to get the user ID and store that to the list of online
+        // users
+        JwtToken token = JwtUtil.decodeToken(jwtToken);
+
+        // Store the online users
+        server.addUserOnline(token.getUserId(), this);
+
+        // Store the userID
+        this.clientID = token.getUserId();
+
+        // After adding the user to the online list, send them the list of online
+        // friends
+        sendOnlineFriendsList(token.getUserId());
+
       }
 
       ///////////////////////////////////////////////////////////////
@@ -70,10 +88,46 @@ public class ClientHandler extends Thread {
 
     } catch (IOException e) {
       System.out.println("Client disconnected: " + e.getMessage());
+      cleanUp();
     } finally {
       cleanUp();
     }
   }
+
+  //////////////////////////////////////////////////////////////////
+
+  // Send friend status online or offline in the first time connect
+
+  private void sendOnlineFriendsList(String userId) {
+    FriendDAO friendDAO = new FriendDAO(server.getConnection());
+
+    try {
+      // Get all friends of the current user
+      Set<Friend> friends = friendDAO.getFriends(server.getConnection(), userId);
+
+      StringBuilder onlineFriends = new StringBuilder("ONLINE_FRIENDS:");
+
+      for (Friend friend : friends) {
+        if (server.isUserOnline(friend.getFriendId())) {
+          onlineFriends.append(friend.getFriendId()).append(",");
+        }
+      }
+
+      // Remove the last comma and send the list to the user
+      if (onlineFriends.length() > 14) { // "ONLINE_FRIENDS:" has 14 characters
+        onlineFriends.setLength(onlineFriends.length() - 1); // remove the trailing comma
+        sendMessage(onlineFriends.toString());
+      } else {
+        sendMessage("ONLINE_FRIENDS:None");
+      }
+
+    } catch (Exception e) {
+      System.out.println("Error sending online friends list: " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+  ////////////////////////////////////////////////////////////
 
   private void handleMessage(String message) {
     if (message.startsWith("CREATE_ROOM")) {
@@ -156,6 +210,7 @@ public class ClientHandler extends Thread {
       synchronized (clientSockets) {
         clientSockets.remove(clientSocket);
       }
+      server.removeUserOffline(clientID, this);
 
     } catch (IOException e) {
       e.printStackTrace();
