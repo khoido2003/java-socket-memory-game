@@ -9,7 +9,7 @@ import java.net.Socket;
 public class SocketClient {
   private String serverAddress;
   private int serverPort;
-  private static final String SECRET_TOKEN = "test_token";
+  private static String SECRET_TOKEN = "test_token";
 
   public SocketClient(String serverAddress, int serverPort) {
     this.serverAddress = serverAddress;

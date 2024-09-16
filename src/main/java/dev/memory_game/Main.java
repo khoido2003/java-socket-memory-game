@@ -1,60 +1,59 @@
 package dev.memory_game;
 
+import static spark.Spark.port;
+
 import java.sql.Connection;
-import java.sql.Statement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
 
 import dev.memory_game.network.SocketServer;
-import dev.memory_game.network.SocketClient;
+import dev.memory_game.utils.ThreadPoolManager;
+import dev.memory_game.controllers.RoutesController;
+// import dev.memory_game.network.SocketClient;
 
 public class Main {
 
   public static void main(String[] args) {
-    // Start the database connection
-    // Connection connection = DbConnection.getConnection();
-    // ResultSet resultSet = null;
-    // Statement statement = null;
 
-    // if (connection != null) {
-    // try {
-    // statement = connection.createStatement();
-    // String query = "SELECT * FROM users"; // Replace with your actual table name
-    // resultSet = statement.executeQuery(query);
-    // // Process the results
-    // while (resultSet.next()) {
-    // // Assuming your table has columns 'id' and 'name'
-    // String id = resultSet.getString("id");
-    // String name = resultSet.getString("name");
-    // System.out.println("ID: " + id + ", Name: " + name);
-    // }
-    // } catch (Exception e) {
-    // e.printStackTrace();
-    // System.out.println("SQL error: " + e.getMessage());
-    // } finally {
-    // // Close resources
-    // try {
-    // if (resultSet != null)
-    // resultSet.close();
-    // if (statement != null)
-    // statement.close();
-    // if (connection != null)
-    // connection.close();
-    // } catch (SQLException e) {
-    // e.printStackTrace();
-    // }
-    // }
-    // } else {
-    // System.out.println("Connection failed");
-    // }
+    // Start the database connection
+    Connection connection = DbConnection.getConnection();
+
+    ////////////////////////////////////////////////////
+
+    // Init the ThreadPool to do asynchronous tasks
+    ExecutorService threadPool = ThreadPoolManager.getThreadPool();
+
+    ///////////////////////////////////////////////////////
+
+    // Set the HTTP server port for Spark
+    // Spark already out of the box with threadpool so no need to configure the
+    // thread pool to spark
+    int httpPort = 8081;
+    port(httpPort);
+
+    // HTTP server - REST API
+    new RoutesController(connection, threadPool);
+
+    /////////////////////////////////////////////////
+
+    // Socket server
 
     // Start the socket server
-    int port = 8080; // Choose your desired port
-    // SocketServer server = new SocketServer(port);
-    // new Thread(() -> server.start()).start();
+    int port = 8082; // Choose your desired port
+    SocketServer server = new SocketServer(port, threadPool, connection);
+    new Thread(() -> server.start()).start();
 
-    // // // Start the socket client
-    SocketClient client = new SocketClient("127.0.0.1", port);
-    new Thread(() -> client.start()).start();
+    System.out.println("Socket server started on port " + port);
+
+    // // // Start the socket client - THE CLIENT WILL BE SEPARATED TO A DIFFERENT
+    // PROJECT THAT SEPECIFY FOR THE FRONTEND, SO ONLY UNCOMMENTED THIS IF YOU WANT
+    // TO TEST IF THE CLIENT CAN CONNECT TO THE SERVER FROM THIS PROJECT.
+
+    // SocketClient client = new SocketClient("127.0.0.1", port);
+    // new Thread(() -> client.start()).start();
+
+    ///////////////////////////////////////////////
+
+    // Add a shutdown threadpool when program close
+    Runtime.getRuntime().addShutdownHook(new Thread(ThreadPoolManager::shutdown));
   }
 }
