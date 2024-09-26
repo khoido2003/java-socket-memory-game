@@ -5,12 +5,17 @@ import java.net.Socket;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.Set;
 
 import dev.memory_game.DAO.FriendDAO;
+import dev.memory_game.DAO.UserDAO;
+import dev.memory_game.controllers.MessageController;
 import dev.memory_game.models.Friend;
 import dev.memory_game.models.JwtToken;
+import dev.memory_game.models.User;
 import dev.memory_game.utils.JwtUtil;
+import dev.memory_game.utils.UserJsonUtil;
 
 // import dev.memory_game.utils.JwtUtil;
 
@@ -19,14 +24,16 @@ public class ClientHandler extends Thread {
   private Set<Socket> clientSockets;
   protected PrintWriter out;
   private String clientID;
-  private Room room;
   private SocketServer server;
+  private MessageController messageController;
+  private Room room;
 
   public ClientHandler(Socket socket, Set<Socket> clientSockets, SocketServer server) {
     this.clientSocket = socket;
     this.clientSockets = clientSockets;
     this.clientID = "";
     this.server = server;
+    this.messageController = new MessageController(this, this.server);
   }
 
   @Override
@@ -49,6 +56,7 @@ public class ClientHandler extends Thread {
         out.println("Unauthorized! Your jwt token is invalid.");
         clientSocket.close();
         return;
+
       } else {
         out.println("Authorized");
 
@@ -62,10 +70,11 @@ public class ClientHandler extends Thread {
         // Store the userID
         this.clientID = token.getUserId();
 
+        System.out.println(this.clientID);
+
         // After adding the user to the online list, send them the list of online
         // friends
         sendOnlineFriendsList(token.getUserId());
-
       }
 
       ///////////////////////////////////////////////////////////////
@@ -77,19 +86,12 @@ public class ClientHandler extends Thread {
 
         System.out.println("Received from client " + clientID + ": " + message);
 
-        // // Echo the message to the user
-        // out.println("Echo: " + "Received mess");
-
-        // Send message to all users
-        // broadcastMessage(message);
-
-        handleMessage(message);
+        messageController.handleMessage(message);
       }
 
-    } catch (IOException e) {
+    } catch (Exception e) {
+      e.printStackTrace();
       System.out.println("Client disconnected: " + e.getMessage());
-      cleanUp();
-    } finally {
       cleanUp();
     }
   }
@@ -105,67 +107,26 @@ public class ClientHandler extends Thread {
       // Get all friends of the current user
       Set<Friend> friends = friendDAO.getFriends(server.getConnection(), userId);
 
-      StringBuilder onlineFriends = new StringBuilder("ONLINE_FRIENDS:");
+      Set<User> onlineFriends = new HashSet<>();
 
       for (Friend friend : friends) {
         if (server.isUserOnline(friend.getFriendId())) {
-          onlineFriends.append(friend.getFriendId()).append(",");
+
+          UserDAO userDao = new UserDAO(server.getConnection());
+          User user = userDao.getUserById(friend.getFriendId());
+
+          friend.setFriendUser(user);
+          onlineFriends.add(user);
         }
       }
 
-      // Remove the last comma and send the list to the user
-      if (onlineFriends.length() > 14) { // "ONLINE_FRIENDS:" has 14 characters
-        onlineFriends.setLength(onlineFriends.length() - 1); // remove the trailing comma
-        sendMessage(onlineFriends.toString());
-      } else {
-        sendMessage("ONLINE_FRIENDS:None");
-      }
+      String jsonOnlineFriends = UserJsonUtil.usersToJsonArray(onlineFriends);
+
+      sendMessage("ONLINE_FRIENDS:" + jsonOnlineFriends);
 
     } catch (Exception e) {
       System.out.println("Error sending online friends list: " + e.getMessage());
       e.printStackTrace();
-    }
-  }
-
-  ////////////////////////////////////////////////////////////
-
-  private void handleMessage(String message) {
-    if (message.startsWith("CREATE_ROOM")) {
-      // Create a new room
-      int maxPlayers = Integer.parseInt(message.split(" ")[1]);
-
-      // Server creates a new room
-      Room room = server.createRoom(maxPlayers);
-
-      // add the current player to the room
-      if (room.addPlayer(this)) {
-        sendMessage("ROOM_CREATED: " + room.getRoomId());
-      }
-    } else if (message.startsWith("JOIN_ROOM")) {
-      // Join an existing room
-      String roomId = message.split(" ")[1];
-      Room room = server.getRoom(roomId);
-
-      if (room != null && room.addPlayer(this)) {
-        sendMessage("JOINED_ROOM: " + roomId);
-        room.broadcast(clientID + " has joined the room", this);
-      } else {
-        sendMessage("ROOM_FULL_OR_NOT_FOUND");
-      }
-    } else if (message.startsWith("LEAVE_ROOM")) {
-      if (room != null) {
-        room.removePlayer(this);
-        room.broadcast(clientID + " has left the room", this);
-
-        if (room.isFull()) {
-          server.removeRoom(room.getRoomId());
-        }
-        room = null;
-      }
-    } else {
-      if (room != null) {
-        room.broadcast(message, this);
-      }
     }
   }
 
@@ -214,8 +175,10 @@ public class ClientHandler extends Thread {
 
     } catch (IOException e) {
       e.printStackTrace();
-    } finally {
-      Thread.currentThread().interrupt();
     }
+  }
+
+  public String getClientID() {
+    return clientID;
   }
 }

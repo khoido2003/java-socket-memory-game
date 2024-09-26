@@ -20,6 +20,59 @@ public class User {
     this.status = status;
   }
 
+  // Manually convert the User object to a JSON-like string
+  public String toJson() {
+    return "{" +
+        "\"userId\":\"" + userId + "\"," +
+        "\"username\":\"" + username + "\"," +
+        "\"password\":\"" + password + "\"," +
+        "\"email\":\"" + email + "\"," +
+        "\"totalPoints\":" + totalPoints + "," +
+        "\"status\":\"" + status + "\"" +
+        "}";
+  }
+
+  // Manually create a User object from a JSON-like string
+  public static User fromJson(String jsonString) {
+    // Remove the curly braces and split by comma to get individual key-value pairs
+    jsonString = jsonString.replace("{", "").replace("}", "");
+    String[] pairs = jsonString.split(",");
+
+    String userId = null, username = null, password = null, email = null, status = null;
+    int totalPoints = 0;
+
+    // Parse each key-value pair
+    for (String pair : pairs) {
+      String[] keyValue = pair.split(":");
+      String key = keyValue[0].trim().replace("\"", "");
+      String value = keyValue[1].trim().replace("\"", "");
+
+      switch (key) {
+        case "userId":
+          userId = value;
+          break;
+        case "username":
+          username = value;
+          break;
+        case "password":
+          password = value;
+          break;
+        case "email":
+          email = value;
+          break;
+        case "totalPoints":
+          totalPoints = Integer.parseInt(value);
+          break;
+        case "status":
+          status = value;
+          break;
+      }
+    }
+
+    // Create a new User object from the parsed values
+    return new User(userId, username, password, email, totalPoints, status);
+  }
+
   public String getEmail() {
     return email;
   }

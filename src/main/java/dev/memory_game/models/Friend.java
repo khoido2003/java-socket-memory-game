@@ -7,7 +7,7 @@ public class Friend {
   private String friendId;
   private Status status;
   private Timestamp createdAt;
-  private User friendUser; // Add User object to hold friend's details
+  private User friendUser;
 
   // Enum for friendship status
   public enum Status {

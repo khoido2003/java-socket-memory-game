@@ -12,7 +12,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import dev.memory_game.DAO.FriendDAO;
+import dev.memory_game.DAO.UserDAO;
 import dev.memory_game.models.Friend;
+import dev.memory_game.models.User;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +25,7 @@ public class SocketServer {
   private Map<String, Room> rooms = new HashMap<>();
 
   private Map<String, ClientHandler> onlineUsers = new ConcurrentHashMap<>();
+  private Map<String, User> onlineUsersInfo = new HashMap<>();
 
   // Setup a thread pool to handle connections
   private final ExecutorService threadPool;
@@ -40,23 +43,29 @@ public class SocketServer {
     try (ServerSocket serverSocket = new ServerSocket(port)) {
 
       while (true) {
+        try {
+          // Accept socket connection from the client
+          Socket clientSocket = serverSocket.accept();
 
-        // Accept socket connection from the client
-        Socket clientSocket = serverSocket.accept();
+          // Add the client socket to the list of user connected.
+          clientSockets.add(clientSocket);
 
-        // Add the client socket to the list of user connected.
-        clientSockets.add(clientSocket);
+          System.out.println("New client connected: " + clientSocket.getInetAddress());
 
-        System.out.println("New client connected: " + clientSocket.getInetAddress());
+          // Create a separate thread for each client connection
+          // NEVER use this way since it can overwhelm the system:
 
-        // Create a separate thread for each client connection
-        // NEVER use this way since it can overwhe`lm the system:
+          // new ClientHandler(clientSocket, clientSockets).start();
 
-        // new ClientHandler(clientSocket, clientSockets).start();
+          // Instead of init a new thread for each client connection, instead using
+          // excutorService to control the thread for each client connection
+          ClientHandler clientHandler = new ClientHandler(clientSocket, clientSockets, this);
+          threadPool.submit(() -> clientHandler.start());
 
-        // Instead of init a new thread for each client connection, instead using
-        // excutorService to control the thread for each client connection
-        threadPool.submit(new ClientHandler(clientSocket, clientSockets, this));
+        } catch (Exception e) {
+          e.printStackTrace();
+          System.out.println("Error connection: " + e.getMessage());
+        }
 
       }
     } catch (IOException e) {
@@ -72,6 +81,15 @@ public class SocketServer {
 
   public void addUserOnline(String userId, ClientHandler client) {
     onlineUsers.put(userId, client);
+    UserDAO userDAO = new UserDAO(connection);
+    User user = userDAO.getUserById(userId);
+
+    if (user != null) {
+      onlineUsersInfo.put(userId, user);
+    } else {
+      System.out.println("User not found: " + userId);
+    }
+
     notifyUserStatusChange(userId, true);
   }
 
@@ -79,6 +97,8 @@ public class SocketServer {
     System.out.println("Remove " + userId);
     onlineUsers.remove(userId);
     client.setRoom(null); // Remove the client from room when they disconnect
+
+    onlineUsersInfo.remove(userId);
     notifyUserStatusChange(userId, false);
   }
 

@@ -135,6 +135,8 @@ mvn -v
 
 ``` bash
 mvn exec:java
+
+.\mvn exec:java
 ```
 
 ###  Cleaning and rebuilding your project using the following commands:
