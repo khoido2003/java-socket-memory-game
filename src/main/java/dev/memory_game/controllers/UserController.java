@@ -20,8 +20,8 @@ public class UserController {
 
   public UserController(Connection connection) {
     this.userDAO = new UserDAO(connection);
-    defineRoutes();
     authMiddleware = new AuthMiddleware(connection);
+    defineRoutes();
   }
 
   private void defineRoutes() {

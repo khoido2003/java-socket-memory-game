@@ -4,11 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import dev.memory_game.models.Friend;
-import dev.memory_game.models.User;
 
 public class FriendDAO {
   private Connection connection;
@@ -18,20 +19,20 @@ public class FriendDAO {
   }
 
   // Add friend
-  public void addFriend(Connection connection, Friend friend) throws SQLException {
+  public void addFriend(Friend friend) throws SQLException {
     String sql = "INSERT INTO Friends(user_id, friend_id, status, created_at) VALUES (?, ?, ?, ?)";
 
     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
       pstmt.setString(1, friend.getUserId());
       pstmt.setString(2, friend.getFriendId());
-      pstmt.setString(3, friend.getStatus().getStatus());
+      pstmt.setString(3, "active");
       pstmt.setTimestamp(4, friend.getCreatedAt());
       pstmt.executeUpdate();
     }
   }
 
   // Remove friend
-  public void removeFriend(Connection connection, String userId, String friendId) throws SQLException {
+  public void removeFriend(String userId, String friendId) throws SQLException {
     String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
 
     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -42,11 +43,11 @@ public class FriendDAO {
   }
 
   // Update friend status
-  public void updateFriendStatus(Connection connection, String userId, String friendId, Friend.Status status)
+  public void updateFriendStatus(String userId, String friendId, String status)
       throws SQLException {
     String sql = "UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?";
     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-      pstmt.setString(1, status.getStatus());
+      pstmt.setString(1, status);
       pstmt.setString(2, userId);
       pstmt.setString(3, friendId);
       pstmt.executeUpdate();
@@ -54,8 +55,8 @@ public class FriendDAO {
   }
 
   // Method to get list friends of a user
-  public Set<Friend> getFriends(Connection connection, String userId) throws SQLException {
-    Set<Friend> friends = new HashSet<>();
+  public List<Friend> getFriends(String userId) throws SQLException {
+    List<Friend> friends = new ArrayList<Friend>();
 
     String sql = "SELECT u.*, f.* FROM friends f JOIN users u ON f.friend_id = u.user_id WHERE f.user_id =? AND f.status = 'accepted'";
 
@@ -65,16 +66,14 @@ public class FriendDAO {
       try (ResultSet rs = pstmt.executeQuery()) {
         while (rs.next()) {
 
-          User friendUser = new User();
-          friendUser.setUserId(rs.getString("friend_id"));
-          friendUser.setUsername(rs.getString("username"));
-          friendUser.setEmail(rs.getString("email"));
-          friendUser.setTotalPoints(rs.getInt("total_points"));
-
           Friend friend = new Friend();
-
           friend.setUserId(rs.getString("user_id"));
           friend.setFriendId(rs.getString("friend_id"));
+          friend.setUsername(rs.getString("username"));
+          friend.setTotalPoints(rs.getInt("total_points"));
+          friend.setEmail(rs.getString("email"));
+          friend.setCreatedAt(rs.getTimestamp("created_at"));
+
           friends.add(friend);
         }
       }
@@ -83,7 +82,7 @@ public class FriendDAO {
   }
 
   // Method to get friend requests of a user
-  public Set<Friend> getFriendRequests(Connection connection, String userId) throws SQLException {
+  public Set<Friend> getFriendRequests(String userId) throws SQLException {
     Set<Friend> friendRequests = new HashSet<>();
 
     String sql = "SELECT u.*, f.* FROM friends f JOIN users u ON f.friend_id = u.user_id WHERE f.user_id =? AND f.status = 'pending'";
@@ -94,23 +93,16 @@ public class FriendDAO {
       try (ResultSet rs = pstmt.executeQuery()) {
         while (rs.next()) {
 
-          User friendUser = new User();
-          friendUser.setUserId(rs.getString("friend_id"));
-          friendUser.setUsername(rs.getString("username"));
-          friendUser.setEmail(rs.getString("email"));
-          friendUser.setTotalPoints(rs.getInt("total_points"));
-
           Friend friend = new Friend();
 
           friend.setUserId(rs.getString("user_id"));
           friend.setFriendId(rs.getString("friend_id"));
-          friend.setStatus(Friend.Status.valueOf(rs.getString("status")));
-
+          friend.setUsername(rs.getString("username"));
+          friend.setTotalPoints(rs.getInt("total_points"));
+          friend.setEmail(rs.getString("email"));
           friendRequests.add(friend);
         }
-
       }
-
     }
     return friendRequests;
   }
@@ -131,5 +123,4 @@ public class FriendDAO {
     }
     return false;
   }
-
 }
