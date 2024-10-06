@@ -1,51 +1,34 @@
 package dev.memory_game.models;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Friend {
+public class Friend extends User {
   private String userId;
   private String friendId;
-  private Status status;
   private Timestamp createdAt;
-  private User friendUser; // Add User object to hold friend's details
 
-  // Enum for friendship status
-  public enum Status {
-    PENDING("pending"),
-    ACCEPTED("accepted"),
-    REJECTED("rejected");
-
-    private final String status;
-
-    Status(String status) {
-      this.status = status;
-    }
-
-    public String getStatus() {
-      return status;
-    }
-
-    public static Status fromString(String status) {
-      for (Status s : Status.values()) {
-        if (s.status.equalsIgnoreCase(status)) {
-          return s;
-        }
-      }
-      throw new IllegalArgumentException("Unknown status: " + status);
-    }
-  }
-
-  // Default constructor
   public Friend() {
   }
 
   // Parameterized constructor
-  public Friend(String userId, String friendId, Status status, Timestamp createdAt, User friendUser) {
+  public Friend(String userId, String friendId) {
     this.userId = userId;
     this.friendId = friendId;
-    this.status = status;
-    this.createdAt = createdAt;
-    this.friendUser = friendUser; // Set friend's user details
+    this.createdAt = new Timestamp(System.currentTimeMillis());
+  }
+
+  @Override
+  public String toJson() {
+    return "{" +
+        "\"userId\":\"" + userId + "\"," +
+        "\"friendId\":\"" + friendId + "\"," +
+        "\"createdAt\":\"" + createdAt + "\"," +
+        "\"email\":\"" + this.getEmail() + "\"," +
+        "\"username\":\"" + this.getUsername() + "\"," +
+        "\"totalPoints\":" + this.getTotalPoints() +
+        "}";
   }
 
   // Getters and Setters
@@ -65,14 +48,6 @@ public class Friend {
     this.friendId = friendId;
   }
 
-  public Status getStatus() {
-    return status;
-  }
-
-  public void setStatus(Status status) {
-    this.status = status;
-  }
-
   public Timestamp getCreatedAt() {
     return createdAt;
   }
@@ -81,22 +56,78 @@ public class Friend {
     this.createdAt = createdAt;
   }
 
-  public User getFriendUser() {
-    return friendUser;
-  }
-
-  public void setFriendUser(User friendUser) {
-    this.friendUser = friendUser;
-  }
-
   @Override
   public String toString() {
     return "Friend{" +
         "userId='" + userId + '\'' +
         ", friendId='" + friendId + '\'' +
-        ", status=" + status +
         ", createdAt=" + createdAt +
-        ", friendUser=" + friendUser +
         '}';
+  }
+
+  // Method to de-serialize JSON string into Friend object
+  public static Friend dejsonlizeObject(String jsonString) {
+    jsonString = jsonString.replace("{", "").replace("}", "");
+    String[] pairs = jsonString.split(",");
+
+    String userId = null, friendId = null, email = null, username = null;
+    Timestamp createdAt = null;
+    int totalPoints = 0;
+
+    for (String pair : pairs) {
+      String[] keyValue = pair.split(":");
+      String key = keyValue[0].trim().replace("\"", "");
+      String value = keyValue[1].trim().replace("\"", "");
+
+      switch (key) {
+        case "userId":
+          userId = value;
+          break;
+        case "friendId":
+          friendId = value;
+          break;
+        case "email":
+          email = value;
+          break;
+        case "username":
+          username = value;
+          break;
+        case "totalPoints":
+          totalPoints = Integer.parseInt(value);
+          break;
+        case "createdAt":
+          createdAt = Timestamp.valueOf(value);
+          break;
+      }
+    }
+    // Create a new Friend object from the parsed values
+    Friend friend = new Friend(userId, friendId);
+    friend.setEmail(email);
+    friend.setUsername(username);
+    friend.setTotalPoints(totalPoints);
+    friend.setCreatedAt(createdAt);
+    return friend;
+  }
+
+  // Method to de-serialize JSON array into list of Friend objects
+  public static List<Friend> dejsonlizeArray(String json) {
+    List<Friend> friends = new ArrayList<>();
+
+    if (json.equals("[]")) {
+      return friends;
+    }
+
+    json = json.trim();
+    json = json.substring(1, json.length() - 2);
+
+    String[] objects = json.split("}, ");
+    for (int i = 0; i < objects.length; i++) {
+      if (!objects[i].endsWith("}")) {
+        objects[i] = objects[i] + "}";
+      }
+      Friend friend = dejsonlizeObject(objects[i]);
+      friends.add(friend);
+    }
+    return friends;
   }
 }

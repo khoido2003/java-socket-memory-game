@@ -55,6 +55,8 @@ public class AuthController {
 
       try {
 
+        System.out.println(req.body());
+
         // Parse the user from the POST request
         User newUser = gson.fromJson(req.body(), User.class);
 
@@ -71,7 +73,7 @@ public class AuthController {
         boolean success = userDAO.createUser(newUser);
 
         if (success) {
-          res.status(201);
+          res.status(200);
           res.type("application/json");
           return gson.toJson(new ApiResponse(true, "User created", newUser));
         } else {

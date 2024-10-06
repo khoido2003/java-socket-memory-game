@@ -64,8 +64,7 @@ public class UserDAO {
             resultSet.getString("username"),
             resultSet.getString("password"),
             resultSet.getString("email"),
-            resultSet.getInt("total_points"),
-            resultSet.getString("status"));
+            resultSet.getInt("total_points"));
 
         users.add(user);
 
@@ -94,9 +93,32 @@ public class UserDAO {
             resultSet.getString("username"),
             resultSet.getString("password"),
             resultSet.getString("email"),
-            resultSet.getInt("total_points"),
-            resultSet.getString("status"));
+            resultSet.getInt("total_points"));
       }
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public List<User> findUserByUsername(String username) {
+    String sql = "SELECT * FROM users WHERE username LIKE ?";
+
+    try (PreparedStatement statement = connection.prepareStatement(sql)) {
+      statement.setString(1, "%" + username + "%");
+      ResultSet resultSet = statement.executeQuery();
+
+      List<User> users = new ArrayList<>();
+      while (resultSet.next()) {
+        users.add(new User(
+            resultSet.getString("user_id"),
+            resultSet.getString("username"),
+            resultSet.getString("password"),
+            resultSet.getString("email"),
+            resultSet.getInt("total_points")));
+      }
+      return users;
 
     } catch (SQLException e) {
       e.printStackTrace();
@@ -106,15 +128,14 @@ public class UserDAO {
 
   // Update a user
   public boolean updateUser(User user) {
-    String sql = "UPDATE users SET username=?, password=?, email=?, total_points=?, status=? WHERE user_id=?";
+    String sql = "UPDATE users SET username=?, password=?, email=?, total_points=? WHERE user_id=?";
 
     try (PreparedStatement statement = connection.prepareStatement(sql)) {
       statement.setString(1, user.getUsername());
       statement.setString(2, user.getPassword());
       statement.setString(3, user.getEmail());
       statement.setInt(4, user.getTotalPoints());
-      statement.setString(5, user.getStatus());
-      statement.setString(6, user.getUserId());
+      statement.setString(5, user.getUserId());
       int rowUpdated = statement.executeUpdate();
       return rowUpdated > 0;
 
@@ -154,8 +175,7 @@ public class UserDAO {
             resultSet.getString("username"),
             resultSet.getString("password"),
             resultSet.getString("email"),
-            resultSet.getInt("total_points"),
-            resultSet.getString("status"));
+            resultSet.getInt("total_points"));
       }
 
     } catch (SQLException e) {

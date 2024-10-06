@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import dev.memory_game.network.SocketServer;
 import dev.memory_game.utils.ThreadPoolManager;
 import dev.memory_game.controllers.RoutesController;
-// import dev.memory_game.network.SocketClient;
+import dev.memory_game.network.SocketClient;
 
 public class Main {
 
@@ -38,7 +38,7 @@ public class Main {
     // Socket server
 
     // Start the socket server
-    int port = 8082; // Choose your desired port
+    int port = 6987; // Choose your desired port
     SocketServer server = new SocketServer(port, threadPool, connection);
     new Thread(() -> server.start()).start();
 
