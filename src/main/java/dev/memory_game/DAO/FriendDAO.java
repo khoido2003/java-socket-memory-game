@@ -25,7 +25,7 @@ public class FriendDAO {
     try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
       pstmt.setString(1, friend.getUserId());
       pstmt.setString(2, friend.getFriendId());
-      pstmt.setString(3, "active");
+      pstmt.setString(3, "pending");
       pstmt.setTimestamp(4, friend.getCreatedAt());
       pstmt.executeUpdate();
     }
@@ -82,8 +82,8 @@ public class FriendDAO {
   }
 
   // Method to get friend requests of a user
-  public Set<Friend> getFriendRequests(String userId) throws SQLException {
-    Set<Friend> friendRequests = new HashSet<>();
+  public List<Friend> getFriendRequests(String userId) {
+    List<Friend> friendRequests = new ArrayList<>();
 
     String sql = "SELECT u.*, f.* FROM friends f JOIN users u ON f.friend_id = u.user_id WHERE f.user_id =? AND f.status = 'pending'";
 
@@ -103,6 +103,9 @@ public class FriendDAO {
           friendRequests.add(friend);
         }
       }
+    } catch (Exception e) {
+      e.printStackTrace();
+      return null;
     }
     return friendRequests;
   }
@@ -122,5 +125,24 @@ public class FriendDAO {
       }
     }
     return false;
+  }
+
+  public boolean acceptFriendRequest(String userId, String friendId) {
+    try {
+      String sql = "UPDATE friends SET status = 'accepted' WHERE user_id = ? AND friend_id = ? AND status = 'pending'";
+
+      PreparedStatement pstmt = connection.prepareStatement(sql);
+      pstmt.setString(1, userId);
+      pstmt.setString(2, friendId);
+      int rowsUpdated = pstmt.executeUpdate();
+
+      return rowsUpdated > 0;
+
+    } catch (Exception e) {
+
+      e.printStackTrace();
+      return false;
+    }
+
   }
 }

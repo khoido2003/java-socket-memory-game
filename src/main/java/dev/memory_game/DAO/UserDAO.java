@@ -102,6 +102,30 @@ public class UserDAO {
     return null;
   }
 
+  public List<User> findUserByUsername(String username) {
+    String sql = "SELECT * FROM users WHERE username LIKE ?";
+
+    try (PreparedStatement statement = connection.prepareStatement(sql)) {
+      statement.setString(1, "%" + username + "%");
+      ResultSet resultSet = statement.executeQuery();
+
+      List<User> users = new ArrayList<>();
+      while (resultSet.next()) {
+        users.add(new User(
+            resultSet.getString("user_id"),
+            resultSet.getString("username"),
+            resultSet.getString("password"),
+            resultSet.getString("email"),
+            resultSet.getInt("total_points")));
+      }
+      return users;
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
   // Update a user
   public boolean updateUser(User user) {
     String sql = "UPDATE users SET username=?, password=?, email=?, total_points=? WHERE user_id=?";
