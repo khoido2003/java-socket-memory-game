@@ -9,6 +9,7 @@ import dev.memory_game.DAO.UserDAO;
 import dev.memory_game.models.Friend;
 import dev.memory_game.models.User;
 import dev.memory_game.network.ClientHandler;
+import dev.memory_game.network.Room;
 import dev.memory_game.network.SocketServer;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -134,7 +135,52 @@ public class MessageController {
 
         friendHandler.sendMessage("RESPONSE_ACCEPT_FRIEND_REQUEST: " + userJson);
       }
-
     }
+
+    if (message.startsWith("REQUEST_CREATE_NEW_ROOM:")) {
+      String userID = message.split(" ")[1];
+
+      Room room = this.socketServer.createRoom(2);
+
+      ClientHandler clientHandler = this.socketServer.getClientSockets().get(userID);
+      room.addPlayer(clientHandler);
+      clientHandler.sendMessage("RESPONSE_CREATE_NEW_ROOM: " + room.getRoomId());
+    }
+
+    if (message.startsWith("REQUEST_INVITE_FRIEND_TO_MATCH: ")) {
+      String roomId = message.split(" ")[2];
+      String friendID = message.split(" ")[1];
+
+      ClientHandler clientHandler = this.socketServer.getClientSockets().get(friendID);
+
+      if (clientHandler != null) {
+        clientHandler.sendMessage("RESPONSE_INVITE_TO_JOIN_MATCH: " + roomId);
+      }
+    }
+
+    if (message.startsWith("ACCEPT_MATCH_INVITE:")) {
+      String userID = message.split(" ")[1];
+      String roomId = message.split(" ")[2];
+
+      System.out.println(userID + " " + roomId);
+
+      ClientHandler curClientHandler = this.socketServer.getClientSockets().get(userID);
+
+      Room room = this.socketServer.getRoom(roomId);
+      room.addPlayer(curClientHandler);
+
+      room.broadcast("RESPONSE_ACCEPT_MATCH_INVITE: " + roomId, curClientHandler);
+    }
+
+    if (message.startsWith("DECLINE_MATCH_INVITE: ")) {
+      String userID = message.split(" ")[1];
+      String roomId = message.split(" ")[2];
+
+      Room room = this.socketServer.getRoom(roomId);
+      room.broadcast("RESPONSE_DECLINE_MATCH_INVITE: " + userID, null);
+
+      this.socketServer.removeRoom(roomId);
+    }
+
   }
 }
