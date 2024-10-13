@@ -76,6 +76,10 @@ public class SocketServer {
     return rooms.get(roomId);
   }
 
+  public Map<String, Room> getRooms() {
+    return rooms;
+  }
+
   public Room createRoom(int maxPlayers) {
     String id = UUID.randomUUID().toString();
     String roomId = "Room-" + id;
