@@ -72,7 +72,7 @@ public class Room {
   }
 
   private String generateRandomString(Random random) {
-    int length = 5;
+    int length = 7;
     StringBuilder sb = new StringBuilder(length);
     for (int i = 0; i < length; i++) {
       char c = (char) (random.nextInt(26) + 'a');
@@ -82,29 +82,39 @@ public class Room {
   }
 
   private void sendNextQuestion() {
-    if (currentQuestionIndex < questions.size()) {
+    if (currentQuestionIndex < 10) {
       String question = questions.get(currentQuestionIndex);
-      broadcast("Question: " + question, null);
-      // Start a timer for the question (10 seconds)
+      int curIndex = currentQuestionIndex + 1;
+      broadcast("QUESTION: " + question + " " + curIndex, null);
 
-      waitingForAnswers = true;
-      startTimer();
+      // Start the memorization timer (5 seconds)
+      new Thread(() -> {
+        try {
+          Thread.sleep(6000); // Wait for 5 seconds
+          hideQuestion(); // Hide the question after 5 seconds
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }).start();
     } else {
       endGame();
     }
   }
 
-  private void startTimer() {
+  private void hideQuestion() {
+    broadcast("HIDE_QUESTION: ", null);
+    waitingForAnswers = true;
+
+    // Start the answer submission timer (10 seconds)
     new Thread(() -> {
       try {
-        Thread.sleep(10000); // Wait for 10 seconds
-        // Notify players that time is up and ask for answers
-        if (waitingForAnswers) { // Only notify if still waiting
-          broadcast("Time's up! Please send your answers.", null);
+        Thread.sleep(11000); // Wait for 10 seconds
+        if (waitingForAnswers) {
+          broadcast("NEXT_QUESTION: ", null);
           currentQuestionIndex++;
-          waitingForAnswers = false; // Set state to no longer wait
+          waitingForAnswers = false;
 
-          // Send the next question
+          // Send the next question after this one is done
           sendNextQuestion();
         }
       } catch (InterruptedException e) {
@@ -115,14 +125,15 @@ public class Room {
 
   public void receiveAnswer(ClientHandler player, String answer) {
     if (!waitingForAnswers) {
-      player.sendMessage("Too late! The next question is coming.");
+      player.sendMessage("TIME_UP: ");
       return;
     }
+    System.out.println("++_+_+ " + answer);
 
     // Check if the answer is correct
     String correctAnswer = questions.get(currentQuestionIndex);
     if (answer.equals(correctAnswer)) {
-      mapScore.put(player, mapScore.get(player) + 1); // Increment player's score
+      mapScore.put(player, mapScore.get(player) + 1);
       player.sendMessage("Correct! You have earned a point.");
     } else {
       player.sendMessage("Incorrect! The correct answer was: " + correctAnswer);

@@ -172,7 +172,7 @@ public class MessageController {
       room.broadcast("RESPONSE_ACCEPT_MATCH_INVITE: " + roomId, curClientHandler);
     }
 
-    if (message.startsWith("DECLINE_MATCH_INVITE: ")) {
+    if (message.startsWith("DECLINE_MATCH_INVITE:")) {
       String userID = message.split(" ")[1];
       String roomId = message.split(" ")[2];
 
@@ -180,6 +180,25 @@ public class MessageController {
       room.broadcast("RESPONSE_DECLINE_MATCH_INVITE: " + userID, null);
 
       this.socketServer.removeRoom(roomId);
+    }
+
+    if (message.startsWith("START_GAME:")) {
+      String roomId = message.split(" ")[1];
+
+      Room currentRoom = this.socketServer.getRoom(roomId);
+      currentRoom.startGame();
+    }
+
+    if (message.startsWith("ANSWER_QUESTION:")) {
+
+      String roomID = message.split(" ")[1];
+      String answer = message.split(" ")[2];
+
+      System.out.println(roomID + ": " + answer);
+
+      Room room = this.socketServer.getRoom(roomID);
+
+      room.receiveAnswer(clientHandler, answer);
     }
 
   }
