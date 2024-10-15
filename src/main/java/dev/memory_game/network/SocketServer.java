@@ -83,7 +83,7 @@ public class SocketServer {
   public Room createRoom(int maxPlayers) {
     String id = UUID.randomUUID().toString();
     String roomId = "Room-" + id;
-    Room room = new Room(roomId, maxPlayers);
+    Room room = new Room(roomId, maxPlayers, connection);
 
     rooms.put(roomId, room);
     return room;

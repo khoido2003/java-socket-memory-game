@@ -1,6 +1,7 @@
 
 package dev.memory_game.network;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,7 +10,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import dev.memory_game.DAO.UserDAO;
+
 public class Room {
+  private final int TOTAL_NUM = 5;
   private int maxPlayers;
   private String roomId;
   private Set<ClientHandler> players = new HashSet<>();
@@ -18,14 +22,20 @@ public class Room {
   private List<String> questions = new ArrayList<>();
   private Map<ClientHandler, Integer> mapScore = new HashMap<>();
   private boolean waitingForAnswers = false;
+  private Connection connection;
 
-  public Room(String roomId, int maxPlayers) {
+  public Room(String roomId, int maxPlayers, Connection connection) {
     this.roomId = roomId;
     this.maxPlayers = maxPlayers;
+    this.connection = connection;
   }
 
   public String getRoomId() {
     return roomId;
+  }
+
+  public Set<ClientHandler> getPlayers() {
+    return players;
   }
 
   public synchronized boolean addPlayer(ClientHandler player) {
@@ -66,23 +76,32 @@ public class Room {
 
   private void generateQuestions() {
     Random random = new Random();
-    for (int i = 0; i < 10; i++) {
-      questions.add(generateRandomString(random));
+    for (int i = 0; i < TOTAL_NUM; i++) {
+      questions.add(generateRandomString(random, i));
     }
   }
 
-  private String generateRandomString(Random random) {
-    int length = 7;
+  private String generateRandomString(Random random, int cnt) {
+    int length = 2 + cnt; // Increase length as the index increases
     StringBuilder sb = new StringBuilder(length);
+
+    // Adjust difficulty: use more letters and numbers as index increases
     for (int i = 0; i < length; i++) {
-      char c = (char) (random.nextInt(26) + 'a');
-      sb.append(c);
+      if (random.nextBoolean()) {
+        // Randomly add a letter (uppercase or lowercase)
+        char letter = (char) (random.nextInt(26) + (random.nextBoolean() ? 'a' : 'A'));
+        sb.append(letter);
+      } else {
+        // Randomly add a digit (0-9)
+        char digit = (char) (random.nextInt(10) + '0');
+        sb.append(digit);
+      }
     }
     return sb.toString();
   }
 
   private void sendNextQuestion() {
-    if (currentQuestionIndex < 10) {
+    if (currentQuestionIndex < TOTAL_NUM) {
       String question = questions.get(currentQuestionIndex);
       int curIndex = currentQuestionIndex + 1;
       broadcast("QUESTION: " + question + " " + curIndex, null);
@@ -128,21 +147,71 @@ public class Room {
       player.sendMessage("TIME_UP: ");
       return;
     }
-    System.out.println("++_+_+ " + answer);
-
     // Check if the answer is correct
     String correctAnswer = questions.get(currentQuestionIndex);
     if (answer.equals(correctAnswer)) {
       mapScore.put(player, mapScore.get(player) + 1);
-      player.sendMessage("Correct! You have earned a point.");
+      player.sendMessage("CORRECT: " + currentQuestionIndex);
     } else {
-      player.sendMessage("Incorrect! The correct answer was: " + correctAnswer);
+      player.sendMessage("WRONG: " + correctAnswer);
     }
   }
 
   private void endGame() {
     gameInProgress = false;
-    broadcast("Game over! Final scores: ", null);
+    broadcast("END: Game over! ", null);
     // Reset the room or implement any end-of-game logic here
+  }
+
+  public void savePoint(ClientHandler clientHandler, int point) {
+    mapScore.put(clientHandler, point);
+  }
+
+  public void comparePoint() {
+
+    if (mapScore.size() < 2)
+      return;
+
+    int maxScore = 0;
+    List<ClientHandler> winners = new ArrayList<>();
+    List<ClientHandler> losers = new ArrayList<>();
+
+    // Find the maximum score
+    for (ClientHandler clientHandler : mapScore.keySet()) {
+      int point = mapScore.get(clientHandler);
+      if (point > maxScore) {
+        maxScore = point;
+      }
+    }
+
+    // Classify players as winners or losers based on the maximum score
+    for (ClientHandler clientHandler : mapScore.keySet()) {
+      int point = mapScore.get(clientHandler);
+      if (point == maxScore) {
+        winners.add(clientHandler);
+      } else {
+        losers.add(clientHandler);
+      }
+    }
+
+    // If all players have the same score, it's a draw
+    if (winners.size() == players.size()) {
+      broadcast("RESULT: Draw matchup!", null);
+    } else {
+      UserDAO userDAO = new UserDAO(connection);
+      // Announce winners and losers
+      for (ClientHandler winner : winners) {
+        winner.sendMessage("RESULT: You win!");
+        String userID = winner.getClientID();
+
+        userDAO.updateUserTotalPoint(userID, 30);
+
+      }
+      for (ClientHandler loser : losers) {
+        loser.sendMessage("RESULT: You lose!");
+        String userID = loser.getClientID();
+        userDAO.updateUserTotalPoint(userID, -30);
+      }
+    }
   }
 }

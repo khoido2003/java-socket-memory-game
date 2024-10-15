@@ -184,4 +184,59 @@ public class UserDAO {
     }
     return null;
   }
+
+  public boolean updateUserTotalPoint(String userID, int newPoint) {
+    String getSql = "SELECT total_points FROM users WHERE user_id = ?";
+    String updateSql = "UPDATE users SET total_points = ? WHERE user_id = ?";
+    PreparedStatement getPs = null;
+    PreparedStatement updatePs = null;
+    ResultSet rs = null;
+
+    try {
+      // Step 1: Retrieve the current total points for the user
+      getPs = connection.prepareStatement(getSql);
+      getPs.setString(1, userID);
+      rs = getPs.executeQuery();
+
+      if (rs.next()) {
+        int currentTotalPoint = rs.getInt("total_points");
+
+        // Step 2: Calculate the updated total points
+        int updatedTotalPoint = currentTotalPoint + newPoint;
+
+        // Step 3: Ensure total points do not drop below 0
+        if (updatedTotalPoint < 0) {
+          updatedTotalPoint = 0; // Set total points to 0 if negative
+        }
+
+        // Step 4: Update the total points in the database
+        updatePs = connection.prepareStatement(updateSql);
+        updatePs.setInt(1, updatedTotalPoint);
+        updatePs.setString(2, userID);
+
+        int rowUpdated = updatePs.executeUpdate();
+        return rowUpdated > 0; // Return true if the update was successful
+      }
+
+      // If userID is not found, return false
+      return false;
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return false;
+    } finally {
+      // Clean up resources
+      try {
+        if (rs != null)
+          rs.close();
+        if (getPs != null)
+          getPs.close();
+        if (updatePs != null)
+          updatePs.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
 }
