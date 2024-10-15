@@ -201,5 +201,24 @@ public class MessageController {
       room.receiveAnswer(clientHandler, answer);
     }
 
+    if (message.startsWith("REQUEST_COMPARE_POINT:")) {
+      String roomId = message.split(" ")[1];
+      String pointRes = message.split(" ")[2];
+      int point = Integer.parseInt(pointRes);
+
+      Room room = this.socketServer.getRoom(roomId);
+
+      room.savePoint(clientHandler, point);
+      room.comparePoint();
+    }
+
+    if (message.startsWith(("REMOVE_ROOM:"))) {
+      String roomId = message.split(" ")[1];
+      Room room = this.socketServer.getRoom(roomId);
+      room.removePlayer(clientHandler);
+      if (room.getPlayers().size() == 0) {
+        this.socketServer.removeRoom(roomId);
+      }
+    }
   }
 }
