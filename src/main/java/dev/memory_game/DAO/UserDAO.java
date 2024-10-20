@@ -67,7 +67,6 @@ public class UserDAO {
             resultSet.getInt("total_points"));
 
         users.add(user);
-
       }
 
     } catch (SQLException e) {
@@ -239,4 +238,31 @@ public class UserDAO {
     }
   }
 
+  public List<User> getLeaderboardList() {
+    List<User> leaderboard = new ArrayList<>();
+
+    String sql = "SELECT * FROM users ORDER BY total_points DESC";
+    try {
+      PreparedStatement statement = connection.prepareStatement((sql));
+
+      ResultSet resultSet = statement.executeQuery();
+
+      while (resultSet.next()) {
+        User user = new User(
+            resultSet.getString("user_id"),
+            resultSet.getString("username"),
+            resultSet.getString("password"),
+            resultSet.getString("email"),
+            resultSet.getInt("total_points"));
+
+        leaderboard.add(user);
+      }
+
+      return leaderboard;
+
+    } catch (SQLException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
 }

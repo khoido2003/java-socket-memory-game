@@ -2,6 +2,7 @@ package dev.memory_game.controllers;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.Set;
 import java.util.ArrayList;
 
 import dev.memory_game.DAO.FriendDAO;
@@ -215,10 +216,45 @@ public class MessageController {
     if (message.startsWith(("REMOVE_ROOM:"))) {
       String roomId = message.split(" ")[1];
       Room room = this.socketServer.getRoom(roomId);
+
+      boolean isGameInProgress = room.getGameInProgress();
+
+      if (isGameInProgress) {
+        clientHandler.sendMessage("RESULT: You lose!");
+        room.broadcast("RESULT: You win-out", clientHandler);
+        room.setGameInProgress(false);
+        UserDAO userDAO = new UserDAO(connection);
+
+        // The user out game when the game is in progress will be lose and lost 30 cups
+        userDAO.updateUserTotalPoint(clientHandler.getClientID(), -30);
+
+        // The other players will gain 30 cups
+        Set<ClientHandler> players = room.getPlayers();
+        for (ClientHandler player : players) {
+          userDAO.updateUserTotalPoint(player.getClientID(), 30);
+        }
+
+        room.removeAllPlayers();
+        this.socketServer.removeRoom(roomId);
+      }
+
       room.removePlayer(clientHandler);
       if (room.getPlayers().size() == 0) {
         this.socketServer.removeRoom(roomId);
       }
+    }
+
+    if (message.startsWith("REQUEST_LEADERBOARD_LIST")) {
+      UserDAO userDAO = new UserDAO(connection);
+
+      List<User> users = userDAO.getLeaderboardList();
+      ;
+
+      List<String> usersJson = new ArrayList<>();
+      for (User user : users) {
+        usersJson.add(user.toJson());
+      }
+      this.clientHandler.sendMessage("RESPONSE_LEADERBOARD_LIST: " + "\"" + usersJson + "\"");
     }
   }
 }
