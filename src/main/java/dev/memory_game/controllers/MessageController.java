@@ -220,5 +220,18 @@ public class MessageController {
         this.socketServer.removeRoom(roomId);
       }
     }
+
+    if (message.startsWith("REQUEST_LEADERBOARD_LIST")) {
+      UserDAO userDAO = new UserDAO(connection);
+
+      List<User> users = userDAO.getLeaderboardList();
+      ;
+
+      List<String> usersJson = new ArrayList<>();
+      for (User user : users) {
+        usersJson.add(user.toJson());
+      }
+      this.clientHandler.sendMessage("RESPONSE_LEADERBOARD_LIST: " + "\"" + usersJson + "\"");
+    }
   }
 }
