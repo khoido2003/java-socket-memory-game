@@ -51,6 +51,11 @@ public class Room {
     players.remove(player);
   }
 
+  public void removeAllPlayers() {
+    players.clear();
+    mapScore.clear();
+  }
+
   public void broadcast(String message, ClientHandler sender) {
     for (ClientHandler player : players) {
       if (player != sender) {
@@ -61,6 +66,14 @@ public class Room {
 
   public boolean isFull() {
     return players.size() == maxPlayers;
+  }
+
+  public boolean getGameInProgress() {
+    return this.gameInProgress;
+  }
+
+  public void setGameInProgress(boolean gameInProgress) {
+    this.gameInProgress = gameInProgress;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -101,7 +114,7 @@ public class Room {
   }
 
   private void sendNextQuestion() {
-    if (currentQuestionIndex < TOTAL_NUM) {
+    if (currentQuestionIndex < TOTAL_NUM && gameInProgress == true) {
       String question = questions.get(currentQuestionIndex);
       int curIndex = currentQuestionIndex + 1;
       broadcast("QUESTION: " + question + " " + curIndex, null);
