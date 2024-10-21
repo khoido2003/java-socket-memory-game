@@ -32,7 +32,8 @@ public class ClientHandler extends Thread {
     this.clientID = "";
     this.server = server;
     this.connection = connection;
-    this.messageController = new MessageController(this, this.server, connection);
+    this.messageController = new MessageController(this, this.server, connection,
+        this.server.getMatchMakingController());
   }
 
   @Override
