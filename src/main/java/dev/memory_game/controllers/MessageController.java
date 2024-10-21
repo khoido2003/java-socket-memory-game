@@ -21,11 +21,15 @@ public class MessageController {
   private Connection connection;
   protected PrintWriter out;
   protected BufferedReader in;
+  private MatchMakingController matchMakingController;
 
-  public MessageController(ClientHandler clientHandler, SocketServer socketServer, Connection connection) {
+  public MessageController(ClientHandler clientHandler, SocketServer socketServer, Connection connection,
+      MatchMakingController matchMakingController) {
     this.clientHandler = clientHandler;
     this.socketServer = socketServer;
     this.connection = connection;
+
+    this.matchMakingController = matchMakingController;
   }
 
   public void handleMessage(String message) {
@@ -255,6 +259,12 @@ public class MessageController {
         usersJson.add(user.toJson());
       }
       this.clientHandler.sendMessage("RESPONSE_LEADERBOARD_LIST: " + "\"" + usersJson + "\"");
+    }
+
+    if (message.startsWith("REQUEST_JOIN_NEW_MATCH")) {
+      System.out.println("Start matchmaking");
+      matchMakingController.setClientHandler(clientHandler);
+      matchMakingController.joinMatchMaking();
     }
   }
 }

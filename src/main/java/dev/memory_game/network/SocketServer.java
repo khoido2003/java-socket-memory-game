@@ -9,11 +9,14 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import dev.memory_game.controllers.MatchMakingController;
+
 public class SocketServer {
   private int port;
   private Connection connection;
   private Map<String, ClientHandler> clientSockets = new HashMap<>();
   private Map<String, Room> rooms = new HashMap<>();
+  private MatchMakingController matchMakingController;
 
   // Setup a thread pool to handle connections
   private final ExecutorService threadPool;
@@ -22,6 +25,11 @@ public class SocketServer {
     this.port = port;
     this.connection = connection;
     this.threadPool = threadPool;
+    this.matchMakingController = new MatchMakingController(connection, this);
+  }
+
+  public MatchMakingController getMatchMakingController() {
+    return matchMakingController;
   }
 
   public void start() {
