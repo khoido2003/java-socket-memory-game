@@ -61,6 +61,44 @@ public class MessageController {
     }
     ;
 
+    if (message.startsWith("REQUEST_ALL_FRIEND_LIST:")) {
+      String userId = message.split(" ")[1];
+      FriendController friendController = new FriendController(connection);
+
+      List<Friend> friendList = friendController.getFriendListOfCurrentUser(userId);
+      List<String> friendListJson = new ArrayList<>();
+
+      for (Friend friend : friendList) {
+        friendListJson.add(friend.toJson());
+      }
+      this.clientHandler.sendMessage("RESPONSE_ALL_FRIEND_LIST: " + "\"" + friendListJson + "\"");
+
+    }
+
+    if (message.startsWith("USER_DISCONNECTED")) {
+      String userId = message.split(" ")[1];
+
+      FriendController friendController = new FriendController(connection);
+
+      List<Friend> friendList = friendController.getFriendListOfCurrentUser(userId);
+      List<String> friendListJson = new ArrayList<>();
+
+      for (Friend friend : friendList) {
+        if (this.socketServer.getClientSockets().containsKey(friend.getUserId())) {
+          friendListJson.add(friend.toJson());
+
+          ClientHandler client = this.socketServer.getClientSockets().get(friend.getUserId());
+
+          // Get the information about the current client
+          UserDAO userDAO = new UserDAO(connection);
+          User user = userDAO.getUserById(userId);
+
+          // Then nottice their friend that this client online
+          client.sendMessage("FRIEND_OFFLINE: " + user.getUserId());
+        }
+      }
+    }
+
     if (message.startsWith("REQUEST_FIND_USER_LIST:")) {
       String requestName = message.substring(24);
       requestName.trim();
