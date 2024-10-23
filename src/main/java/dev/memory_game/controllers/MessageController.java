@@ -61,6 +61,20 @@ public class MessageController {
     }
     ;
 
+    if (message.startsWith("REQUEST_ALL_FRIEND_LIST:")) {
+      String userId = message.split(" ")[1];
+      FriendController friendController = new FriendController(connection);
+
+      List<Friend> friendList = friendController.getFriendListOfCurrentUser(userId);
+      List<String> friendListJson = new ArrayList<>();
+
+      for (Friend friend : friendList) {
+        friendListJson.add(friend.toJson());
+      }
+      this.clientHandler.sendMessage("RESPONSE_ALL_FRIEND_LIST: " + "\"" + friendListJson + "\"");
+
+    }
+
     if (message.startsWith("USER_DISCONNECTED")) {
       String userId = message.split(" ")[1];
 
